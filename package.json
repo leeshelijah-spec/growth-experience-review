@@ -1,0 +1,16 @@
+{
+  "name": "growth-experience-review",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Growth Experience Review (G.E.R) turns Codex archived sessions into weekly mentoring reports and a dashboard.",
+  "type": "module",
+  "scripts": {
+    "export": "node scripts/export-codex-archives.mjs",
+    "report": "node scripts/generate-weekly-review.mjs",
+    "dashboard": "node scripts/build-dashboard.mjs",
+    "weekly": "npm run export && npm run report && npm run dashboard"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

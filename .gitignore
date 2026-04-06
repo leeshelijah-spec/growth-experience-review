@@ -1,0 +1,13 @@
+node_modules/
+*.zip
+dist/
+
+generated/archived_sessions_md/*
+!generated/archived_sessions_md/.gitkeep
+
+generated/reports/*
+!generated/reports/.gitkeep
+!generated/reports/weekly/
+
+generated/reports/weekly/*
+!generated/reports/weekly/.gitkeep
