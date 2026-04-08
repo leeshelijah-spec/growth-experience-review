@@ -19,7 +19,7 @@ Growth Experience Review analyzes archived Codex sessions by week and produces r
 - The representative type is selected by explicit rule-based logic, not free-form interpretation.
 - `Reversed` is not a separate type. It is a warning state layered on top of the current type when structural risk is detected.
 
-## The Six Fixed Types
+## The Six Fixed Types(Tarot cards based)
 
 - `Fool`: exploratory mode with active trial-and-error and direction finding
 - `Magician`: execution mode that turns requests into concrete output
