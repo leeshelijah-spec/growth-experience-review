@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "fallbackTypeKey": "fool",
+  "priority": [
+    "hierophant",
+    "magician",
+    "star",
+    "hermit",
+    "chariot",
+    "fool"
+  ],
+  "types": [
+    {
+      "key": "fool",
+      "name": "Fool",
+      "subtitle": "탐색형",
+      "description": "시도와 탐색이 많고 방향을 찾는 단계. 아직 구조화나 정교한 실행은 부족할 수 있음",
+      "reasonTemplate": "맥락 제공력 또는 복구력이 살아 있으면서 명확성·절차 설계력·검증성 중 C 이하가 {exploratoryCount}개라 방향 탐색 중심의 탐색형으로 분류됨",
+      "conditions": [
+        {
+          "op": "any_at_least",
+          "axes": [
+            "context_provision",
+            "recovery"
+          ],
+          "grade": "B"
+        },
+        {
+          "op": "count_at_least",
+          "axes": [
+            "clarity",
+            "procedure_design",
+            "verifiability"
+          ],
+          "grade": "C",
+          "predicate": "at_most",
+          "count": 2,
+          "metric": "exploratoryCount"
+        }
+      ],
+      "fallbackReasonTemplate": "다른 타입 규칙이 선명하게 충족되지 않아 현재 주차의 탐색 성격을 기준으로 탐색형으로 정리함"
+    },
+    {
+      "key": "magician",
+      "name": "Magician",
+      "subtitle": "실행형",
+      "description": "아이디어를 실제 결과물로 연결하는 힘이 강하고 요청을 산출물로 전환하는 능력이 좋은 유형",
+      "reasonTemplate": "명확성과 절차 설계력이 안정적으로 높고 검증성도 기본선 이상이라 요청을 결과물로 전환하는 실행형으로 분류됨",
+      "conditions": [
+        {
+          "op": "axis_at_least",
+          "axis": "clarity",
+          "grade": "B"
+        },
+        {
+          "op": "axis_at_least",
+          "axis": "procedure_design",
+          "grade": "B"
+        },
+        {
+          "op": "axis_at_least",
+          "axis": "verifiability",
+          "grade": "C"
+        },
+        {
+          "op": "overall_at_least",
+          "grade": "C"
+        }
+      ]
+    },
+    {
+      "key": "chariot",
+      "name": "Chariot",
+      "subtitle": "추진형",
+      "description": "속도와 드라이브가 강하고 빠르게 전진하지만 검증 부족 위험이 있을 수 있는 유형",
+      "reasonTemplate": "명확성·절차 설계력 축이 이번 주 상위권이고 검증성이 {verificationScore}점으로 약해 속도 중심의 추진형으로 분류됨",
+      "conditions": [
+        {
+          "op": "top_axis_in",
+          "axes": [
+            "clarity",
+            "procedure_design"
+          ]
+        },
+        {
+          "op": "any_score_at_least",
+          "axes": [
+            "clarity",
+            "procedure_design"
+          ],
+          "score": 68
+        },
+        {
+          "op": "axis_score_at_most",
+          "axis": "verifiability",
+          "score": 55,
+          "metric": "verificationScore"
+        },
+        {
+          "op": "overall_at_least",
+          "grade": "C"
+        }
+      ]
+    },
+    {
+      "key": "hermit",
+      "name": "Hermit",
+      "subtitle": "성찰형",
+      "description": "분석, 회고, 깊이 있는 검토에 강점이 있고 속도보다 이해와 통찰을 중시하는 유형",
+      "reasonTemplate": "검증성·회고 지속성·맥락 제공력 중 B 이상이 {reflectionCount}개라 깊이 있는 검토와 회고 중심의 성찰형으로 분류됨",
+      "conditions": [
+        {
+          "op": "count_at_least",
+          "axes": [
+            "verifiability",
+            "retrospective_continuity",
+            "context_provision"
+          ],
+          "grade": "B",
+          "count": 2,
+          "metric": "reflectionCount"
+        },
+        {
+          "op": "axis_at_least",
+          "axis": "verifiability",
+          "grade": "C"
+        },
+        {
+          "op": "overall_at_least",
+          "grade": "C"
+        }
+      ]
+    },
+    {
+      "key": "hierophant",
+      "name": "Hierophant",
+      "subtitle": "체계화형",
+      "description": "규칙, 기준, 프로세스, 재사용 가능한 틀을 만드는 데 강점이 있는 유형",
+      "reasonTemplate": "절차 설계력·명확성·검증성 중 B 이상이 {structuredCount}개라 반복 가능한 기준과 운영 구조를 만드는 체계화형으로 분류됨",
+      "conditions": [
+        {
+          "op": "count_at_least",
+          "axes": [
+            "clarity",
+            "procedure_design",
+            "verifiability"
+          ],
+          "grade": "B",
+          "count": 2,
+          "metric": "structuredCount"
+        },
+        {
+          "op": "axis_at_least",
+          "axis": "procedure_design",
+          "grade": "B"
+        },
+        {
+          "op": "overall_at_least",
+          "grade": "C"
+        }
+      ]
+    },
+    {
+      "key": "star",
+      "name": "Star",
+      "subtitle": "성장지향형",
+      "description": "장기 개선, 방향성, 회복, 지속적인 발전에 강점이 있는 유형",
+      "reasonTemplate": "회고 지속성이 이번 주 최상위 축이고 {retrospectiveScore}점으로 유지되며 맥락 제공력도 {contextScore}점이라 누적 개선 흐름을 보는 성장지향형으로 분류됨",
+      "conditions": [
+        {
+          "op": "top_axis_in",
+          "axes": [
+            "retrospective_continuity"
+          ]
+        },
+        {
+          "op": "axis_score_at_least",
+          "axis": "retrospective_continuity",
+          "score": 66,
+          "metric": "retrospectiveScore"
+        },
+        {
+          "op": "axis_score_at_least",
+          "axis": "context_provision",
+          "score": 60,
+          "metric": "contextScore"
+        },
+        {
+          "op": "overall_at_least",
+          "grade": "C"
+        }
+      ]
+    }
+  ],
+  "reversed": {
+    "label": "Reversed",
+    "description": "현재 접근 방식에 구조적 문제가 존재하며 기존 방식 유지 시 개선 효과가 제한적이므로 일부 또는 전체 접근 방식의 재설계가 필요함",
+    "rarePolicy": "conservative",
+    "rules": [
+      {
+        "key": "multi_low_axes",
+        "reasonTemplate": "D 이하 등급 축이 {criticalLowCount}개라 현재 방식 유지 시 구조적 품질 저하 위험이 있음",
+        "conditions": [
+          {
+            "op": "count_at_least",
+            "axes": "ALL",
+            "grade": "D",
+            "predicate": "at_most",
+            "count": 3,
+            "metric": "criticalLowCount"
+          }
+        ]
+      },
+      {
+        "key": "weak_core_structure",
+        "reasonTemplate": "명확성과 절차 설계력이 모두 D 이하라 접근 방식의 기본 구조를 다시 설계할 필요가 있음",
+        "conditions": [
+          {
+            "op": "axis_at_most",
+            "axis": "clarity",
+            "grade": "D"
+          },
+          {
+            "op": "axis_at_most",
+            "axis": "procedure_design",
+            "grade": "D"
+          }
+        ]
+      },
+      {
+        "key": "verification_break",
+        "reasonTemplate": "검증성이 D 이하이면서 전체 평균도 D권이라 현재 방식 유지 시 결과 품질과 주차 비교 가능성이 크게 흔들릴 수 있음",
+        "conditions": [
+          {
+            "op": "axis_at_most",
+            "axis": "verifiability",
+            "grade": "D"
+          },
+          {
+            "op": "overall_at_most",
+            "grade": "D"
+          }
+        ]
+      },
+      {
+        "key": "sharp_drop",
+        "reasonTemplate": "전주 대비 평균 점수가 {averageDelta}점 하락했고 핵심 축 급락이 {coreDropCount}개라 접근 방식 재정의가 필요함",
+        "conditions": [
+          {
+            "op": "score_delta_at_most",
+            "target": "overall",
+            "delta": -12,
+            "metric": "averageDelta"
+          },
+          {
+            "op": "count_score_deltas_at_most",
+            "axes": [
+              "clarity",
+              "procedure_design",
+              "verifiability"
+            ],
+            "delta": -15,
+            "count": 1,
+            "metric": "coreDropCount"
+          }
+        ]
+      }
+    ]
+  }
+}

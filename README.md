@@ -1,42 +1,84 @@
 # Growth Experience Review (G.E.R)
 
-Growth Experience Review (G.E.R) is a small standalone project for non-developers who use Codex regularly and want a weekly mentoring view of their work.
+[한국어 문서 보기](./README.ko.md)
 
-It does three things:
+### *"This story is the tale of me starting to walk the path of vibe coding."*
 
-1. Converts Codex archived session `.jsonl` files into readable Markdown.
-2. Analyzes those Markdown files into weekly mentoring reports.
-3. Builds an HTML dashboard so the latest report, growth trend, and past reports are easy to review in one place.
+Growth Experience Review analyzes archived Codex sessions by week and produces reports plus a dashboard that combine six evaluation axes, internal scores, A-E grades, a single representative profile type, and an optional `Reversed` warning layer.
 
-## Why this project exists
+## Overview
 
-This repository is meant to be portable. You can move the entire folder out of `omo` and keep using it as a separate project.
+- The evaluation axes are fixed at six:
+  - `Clarity`
+  - `Context Provision`
+  - `Procedure Design`
+  - `Verifiability`
+  - `Recovery`
+  - `Retrospective Continuity`
+- Each axis is scored on a `0-100` internal scale and then mapped to an `A-E` display grade.
+- The representative type is selected by explicit rule-based logic, not free-form interpretation.
+- `Reversed` is not a separate type. It is a warning state layered on top of the current type when structural risk is detected.
 
-Personal output files are not included in version control by default. The generated reports stay in `generated/` on your machine so you can publish the tool without publishing your private session history.
+## The Six Fixed Types
 
-## Folder structure
+- `Fool`: exploratory mode with active trial-and-error and direction finding
+- `Magician`: execution mode that turns requests into concrete output
+- `Chariot`: drive-oriented mode with speed and momentum, but possible verification gaps
+- `Hermit`: reflective mode with stronger analysis, review, and depth
+- `Hierophant`: systemizing mode focused on rules, standards, reusable process, and operating structure
+- `Star`: growth-oriented mode that emphasizes long-term improvement, direction, and sustained progress
 
-- `scripts/`: the Node.js scripts that run the workflow
-- `generated/archived_sessions_md/`: exported Markdown sessions
-- `generated/reports/`: generated weekly reports and dashboard
-- `run-weekly-review.cmd`: double-click entry point for Windows
-- `RELEASING.md`: practical GitHub release checklist
+The system does not expand the taxonomy into twelve reversed types. The type always describes the main working style of the week.
 
-## Requirements
+## Reversed
 
-- Windows
-- Node.js 20 or newer
-- Codex archived sessions stored in `C:\Users\<you>\.codex\archived_sessions`
+- `Reversed` is a warning layer, not a profile category.
+- It signals structural weakness, redesign pressure, or a high risk of continuing the same approach unchanged.
+- Results should be read as `type + reversed state + reasoning`.
 
-## Quick start
+Examples:
 
-If you prefer the easiest path, double-click:
+- `Magician`
+- `Magician (Reversed)`
 
-```cmd
-run-weekly-review.cmd
-```
+## Rule Sources
 
-Or run the steps manually:
+- Axis labels, descriptions, grade criteria, and score bands:
+  - [config/ratings.json](./config/ratings.json)
+- Fixed type list, descriptions, priority order, and type classification rules:
+  - [config/profile-rules.json](./config/profile-rules.json)
+- `Reversed` description and trigger conditions:
+  - [config/profile-rules.json](./config/profile-rules.json)
+- Shared scoring and profile evaluation engine:
+  - [scripts/lib/evaluation-config.mjs](./scripts/lib/evaluation-config.mjs)
+
+## Outputs
+
+- Weekly report generator:
+  - [scripts/generate-weekly-review.mjs](./scripts/generate-weekly-review.mjs)
+- HTML dashboard generator:
+  - [scripts/build-dashboard.mjs](./scripts/build-dashboard.mjs)
+- Generated artifacts:
+  - [generated/reports/LATEST.md](./generated/reports/LATEST.md)
+  - [generated/reports/TIMELINE.md](./generated/reports/TIMELINE.md)
+  - [generated/reports/index.html](./generated/reports/index.html)
+  - [generated/reports/weekly](./generated/reports/weekly)
+
+## Dashboard Notes
+
+- The top card separates the representative type from the `Reversed` warning state.
+- The page theme changes by representative type:
+  - `Hierophant`: green
+  - `Magician`: red
+  - `Star`: platinum
+  - `Hermit`: purple
+  - `Chariot`: silver
+  - `Fool`: gold
+- Axis labels on the radar chart expose grade-building criteria through tooltips.
+- The detail modal reorganizes each weekly report into a cleaner dashboard-oriented layout.
+- Type reference guidance is shown from the main dashboard through a dedicated popup instead of being repeated in every weekly report.
+
+## Run
 
 ```powershell
 npm run export
@@ -44,41 +86,28 @@ npm run report
 npm run dashboard
 ```
 
-Or all at once:
+Run everything in sequence:
 
 ```powershell
 npm run weekly
 ```
 
-## What gets generated
+## Verification
 
-After a run, you can open:
+1. Run `npm run report`.
+2. Run `npm run dashboard`.
+3. Check the following:
 
-- `generated/reports/LATEST.md`
-- `generated/reports/TIMELINE.md`
-- `generated/reports/weekly/YYYY-Www.md`
-- `generated/reports/index.html`
+- Every week resolves to one of the six fixed types.
+- `Reversed` appears only as a warning layer.
+- Weekly reports include type reasoning and reversed reasoning.
+- The dashboard keeps type, warning state, and evidence visually separated.
+- Timeline and week-to-week comparisons continue to work.
 
-## Mentoring focus
+## Change History
 
-G.E.R scores six habits that matter for practical Codex usage:
+- See [CHANGELOG.md](./CHANGELOG.md) for date-based changes through April 8, 2026.
 
-- request clarity
-- background/context sharing
-- step-by-step workflow
-- verification habit
-- recovery when blocked
-- weekly review habit
+## Special thanks 
 
-The dashboard compares:
-
-- selected week
-- previous week
-- overall average
-
-## GitHub-ready notes
-
-- This project is separated from `omo` so it can become its own repository.
-- Generated reports are ignored by default to protect private history.
-- A public license has not been chosen yet. Pick one before publishing publicly.
-- Release steps are documented in [RELEASING.md](RELEASING.md).
+- [fivetaku/vibe-sunsang](https://github.com/fivetaku/vibe-sunsang) for the inspiration.

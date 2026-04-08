@@ -11,3 +11,7 @@ generated/reports/*
 
 generated/reports/weekly/*
 !generated/reports/weekly/.gitkeep
+
+# Local workspace artifacts
+Gemini_Generated_Image_map05bmap05bmap0.png
+index.html - 바로 가기.lnk
