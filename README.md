@@ -67,13 +67,7 @@ Examples:
 ## Dashboard Notes
 
 - The top card separates the representative type from the `Reversed` warning state.
-- The page theme changes by representative type:
-  - `Hierophant`: green
-  - `Magician`: red
-  - `Star`: platinum
-  - `Hermit`: purple
-  - `Chariot`: silver
-  - `Fool`: gold
+- The page theme changes by representative type.
 - Axis labels on the radar chart expose grade-building criteria through tooltips.
 - The detail modal reorganizes each weekly report into a cleaner dashboard-oriented layout.
 - Type reference guidance is shown from the main dashboard through a dedicated popup instead of being repeated in every weekly report.
