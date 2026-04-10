@@ -69,6 +69,7 @@ Growth Experience Review는 Codex 아카이브 세션을 주간 단위로 분석
 - 상단 카드에서 대표 타입과 `Reversed` 경고 상태를 분리해서 보여줍니다.
 - 대표 타입에 따라 페이지 전체 톤이 바뀝니다.
 - 레이더 차트 축 라벨에 마우스를 올리면 현재 등급 기준의 판정 기준이 툴팁으로 표시됩니다.
+- 레이더 툴팁 박스는 차트 중앙에 고정되며, 본문 글씨를 확대해 빠르게 읽을 수 있도록 조정했습니다.
 - 자세히보기 모달은 리포트를 대시보드 친화적인 순서와 표 형태로 다시 구성합니다.
 - 타입 기준 참고는 주간 리포트마다 반복하지 않고, 메인 화면의 별도 팝업에서 확인합니다.
 
@@ -86,6 +87,15 @@ npm run dashboard
 npm run weekly
 ```
 
+Windows에서 더블클릭 실행:
+
+```powershell
+run-weekly-review.cmd
+```
+
+- 성공 시 대시보드(`generated/reports/index.html`)가 기본 브라우저로 자동 실행됩니다.
+- 자동 실행 없이 리포트만 만들려면 `run-weekly-review.cmd --no-open`을 사용합니다.
+
 ## 검증 방법
 
 1. `npm run report`
@@ -100,7 +110,7 @@ npm run weekly
 
 ## 변경 이력
 
-- 2026-04-08까지의 변경 사항은 [CHANGELOG.md](./CHANGELOG.md)에서 날짜별로 확인할 수 있습니다.
+- 2026-04-10까지의 변경 사항은 [CHANGELOG.md](./CHANGELOG.md)에서 날짜별로 확인할 수 있습니다.
 
 ## 감사의 인사
 - 아이디어의 출발점이 된 [fivetaku/vibe-sunsang](https://github.com/fivetaku/vibe-sunsang)에 감사를 전합니다.

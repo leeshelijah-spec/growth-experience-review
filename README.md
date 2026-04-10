@@ -69,6 +69,7 @@ Examples:
 - The top card separates the representative type from the `Reversed` warning state.
 - The page theme changes by representative type.
 - Axis labels on the radar chart expose grade-building criteria through tooltips.
+- Radar tooltips are fixed at the visual center of the chart area and use larger typography for quicker reading.
 - The detail modal reorganizes each weekly report into a cleaner dashboard-oriented layout.
 - Type reference guidance is shown from the main dashboard through a dedicated popup instead of being repeated in every weekly report.
 
@@ -86,6 +87,15 @@ Run everything in sequence:
 npm run weekly
 ```
 
+Double-click entry point on Windows:
+
+```powershell
+run-weekly-review.cmd
+```
+
+- On success, the dashboard (`generated/reports/index.html`) opens automatically in your default browser.
+- To generate reports without opening the browser, use `run-weekly-review.cmd --no-open`.
+
 ## Verification
 
 1. Run `npm run report`.
@@ -100,7 +110,7 @@ npm run weekly
 
 ## Change History
 
-- See [CHANGELOG.md](./CHANGELOG.md) for date-based changes through April 8, 2026.
+- See [CHANGELOG.md](./CHANGELOG.md) for date-based changes through April 10, 2026.
 
 ## Special thanks 
 

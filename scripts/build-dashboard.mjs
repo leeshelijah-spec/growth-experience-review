@@ -173,6 +173,7 @@ function parseScoreRowsFromSections(sections, evaluationConfig) {
         score: row.score,
         grade: row.grade,
         meaning: row.meaning || axis.description,
+        description: axis.description,
         criterion: axis.gradeCriteria?.[row.grade] ?? axis.description,
       };
     }
@@ -183,6 +184,7 @@ function parseScoreRowsFromSections(sections, evaluationConfig) {
       score: 0,
       grade: 'E',
       meaning: '데이터 없음',
+      description: axis.description,
       criterion: axis.gradeCriteria?.E ?? axis.description,
     };
   });
@@ -239,6 +241,7 @@ function computeAverageScores(reports, evaluationConfig) {
       score: average,
       grade: scoreToGrade(average, evaluationConfig),
       meaning: axis.description,
+      description: axis.description,
       criterion: axis.gradeCriteria?.[scoreToGrade(average, evaluationConfig)] ?? axis.description,
     };
   });
@@ -323,6 +326,8 @@ function buildHtml(data) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/x-icon" href="../../config/favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="../../config/favicon.ico" />
   <title>Growth Experience Review (G.E.R)</title>
   <style>
     :root {
@@ -339,7 +344,7 @@ function buildHtml(data) {
       --compare-current: #0f766e;
       --compare-previous: #c08457;
       --compare-average: #4b5563;
-      --ui-scale: 0.85;
+      --ui-scale: 0.765;
       --shadow: 0 20px 50px rgba(36, 46, 39, 0.10);
       --radius-lg: 24px;
       --radius-md: 16px;
@@ -694,6 +699,7 @@ function buildHtml(data) {
     body {
       margin: 0;
       font-family: "IBM Plex Sans KR", "Segoe UI Variable", "Noto Sans KR", sans-serif;
+      font-size: 16.5px;
       color: var(--ink);
       zoom: var(--ui-scale);
       background:
@@ -707,15 +713,15 @@ function buildHtml(data) {
     a:hover { text-decoration: underline; }
 
     .shell {
-      max-width: 1380px;
+      max-width: 1520px;
       margin: 0 auto;
-      padding: 28px 20px 48px;
+      padding: 16px 10px 24px;
     }
 
     .hero {
       border: 1px solid var(--line);
-      border-radius: 32px;
-      padding: 28px;
+      border-radius: 30px;
+      padding: 20px 18px 18px;
       background:
         linear-gradient(145deg, var(--hero-start), var(--hero-end)),
         var(--bg-soft);
@@ -724,8 +730,8 @@ function buildHtml(data) {
 
     .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
-      gap: 22px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
       align-items: stretch;
     }
 
@@ -964,7 +970,7 @@ function buildHtml(data) {
     .panel { padding: 18px; }
     .panel h2 {
       margin: 0 0 14px;
-      font-size: 20px;
+      font-size: 21px;
       letter-spacing: -0.02em;
     }
 
@@ -1036,15 +1042,23 @@ function buildHtml(data) {
 
     .radar-label {
       fill: var(--ink);
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       text-anchor: middle;
       cursor: help;
     }
 
+    .radar-label-desc {
+      fill: var(--muted);
+      font-size: 15px;
+      font-weight: 600;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
     .radar-grade-label {
       fill: var(--muted);
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
       text-anchor: middle;
       pointer-events: none;
@@ -1073,40 +1087,53 @@ function buildHtml(data) {
 
     .radar-tooltip {
       position: absolute;
-      min-width: 220px;
-      max-width: 280px;
+      left: 50%;
+      top: 50%;
+      min-width: 260px;
+      max-width: 340px;
       pointer-events: none;
       background: rgba(24, 36, 31, 0.96);
       color: #f7f5ef;
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       box-shadow: 0 16px 32px rgba(19, 27, 24, 0.22);
       opacity: 0;
-      transform: translateY(6px);
+      transform: translate(-50%, calc(-50% + 6px));
       transition: opacity 140ms ease, transform 140ms ease;
       z-index: 20;
     }
 
     .radar-tooltip.is-visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate(-50%, -50%);
     }
 
     .tooltip-title {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 6px;
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 7px;
+      line-height: 1.35;
+    }
+
+    .tooltip-sub {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: rgba(247, 245, 239, 0.92);
+      margin-bottom: 8px;
     }
 
     .tooltip-score {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
+      line-height: 1.35;
       margin-bottom: 8px;
     }
 
     .tooltip-text {
-      font-size: 12px;
-      line-height: 1.55;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.45;
       color: rgba(247, 245, 239, 0.86);
     }
 
@@ -1571,9 +1598,9 @@ function buildHtml(data) {
     }
 
     .page-title {
-      margin: 0 0 18px;
+      margin: 0 0 12px;
       font-family: "Aptos Display", "Bahnschrift", sans-serif;
-      font-size: clamp(42px, 5.2vw, 64px);
+      font-size: clamp(38px, 4.8vw, 58px);
       font-weight: 700;
       line-height: 0.94;
       letter-spacing: -0.03em;
@@ -1591,14 +1618,14 @@ function buildHtml(data) {
     }
 
     .hero-grid {
-      grid-template-columns: minmax(430px, 580px) minmax(0, 1fr);
-      align-items: start;
-      gap: 14px;
+      grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+      align-items: stretch;
+      gap: 10px;
     }
 
     .hero-side {
       display: grid;
-      grid-template-rows: auto auto auto;
+      grid-template-rows: auto auto;
       gap: 10px;
       min-width: 0;
       min-height: 100%;
@@ -1607,8 +1634,10 @@ function buildHtml(data) {
 
     .hero-main {
       display: grid;
-      gap: 16px;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
       min-width: 0;
+      min-height: 100%;
     }
 
     .type-card {
@@ -1661,7 +1690,7 @@ function buildHtml(data) {
       padding: 14px 15px;
       display: grid;
       gap: 12px;
-      min-height: 146px;
+      min-height: 128px;
       transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
 
@@ -1805,18 +1834,47 @@ function buildHtml(data) {
     }
 
     .radar-square {
-      min-height: 392px;
-      aspect-ratio: 1 / 1;
-      padding: 6px;
+      min-height: 360px;
+      aspect-ratio: 4 / 3;
+      padding: 4px;
+      width: min(100%, 640px);
+      margin: 0 auto;
       background: var(--radar-surface-bg);
+    }
+
+    .legend {
+      margin-top: 10px;
+      gap: 8px 12px;
+      font-size: 13px;
+    }
+
+    .legend-note {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .report-picker-panel {
       background: var(--picker-panel-bg);
     }
 
+    .report-picker-panel-bottom {
+      display: grid;
+      grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+    }
+
+    .report-picker-panel-bottom h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
     .report-select {
       margin-top: 0;
+      padding: 10px 12px;
       font-size: 14px;
       background: var(--picker-field-bg);
       border-color: var(--picker-field-border);
@@ -1856,7 +1914,7 @@ function buildHtml(data) {
       color: var(--ink);
       padding: 8px 12px;
       font: inherit;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       transition: background 140ms ease, border-color 140ms ease;
     }
@@ -1914,7 +1972,7 @@ function buildHtml(data) {
     .detail-mini-label {
       margin: 0;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 18px;
       font-weight: 700;
       letter-spacing: 0.03em;
       text-transform: uppercase;
@@ -1929,7 +1987,7 @@ function buildHtml(data) {
 
     .detail-type-copy {
       margin: 0;
-      font-size: 14px;
+      font-size: 18px;
       line-height: 1.68;
       color: var(--muted);
     }
@@ -1955,7 +2013,7 @@ function buildHtml(data) {
       padding: 12px 14px;
       border-bottom: 1px solid var(--line);
       vertical-align: top;
-      font-size: 14px;
+      font-size: 18px;
       text-align: left;
     }
 
@@ -1968,7 +2026,7 @@ function buildHtml(data) {
     .detail-summary-table th {
       width: 32%;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 18px;
       font-weight: 700;
       background: rgba(15, 118, 110, 0.06);
     }
@@ -1982,7 +2040,7 @@ function buildHtml(data) {
     .detail-evaluation-table th {
       background: rgba(15, 118, 110, 0.08);
       color: var(--muted);
-      font-size: 13px;
+      font-size: 18px;
       font-weight: 700;
     }
 
@@ -2029,12 +2087,40 @@ function buildHtml(data) {
     .reason-meta {
       margin-top: 4px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 18px;
+    }
+
+    .detail-action-list {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail-action-list li {
+      line-height: 1.7;
+      font-size: 18px;
+      color: var(--ink);
+    }
+
+    .detail-action-main {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .detail-action-sub {
+      margin: 6px 0 0;
+      font-size: 18px;
+      line-height: 1.65;
+      color: var(--muted);
     }
 
     .guide-intro {
       margin: 0;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.7;
       color: var(--muted);
     }
@@ -2063,7 +2149,7 @@ function buildHtml(data) {
 
     .guide-card p {
       margin: 0;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.65;
       color: var(--muted);
     }
@@ -2081,6 +2167,10 @@ function buildHtml(data) {
         grid-template-columns: 1fr;
       }
 
+      .report-picker-panel-bottom {
+        grid-template-columns: 1fr;
+      }
+
       .page-title {
         white-space: normal;
       }
@@ -2089,7 +2179,7 @@ function buildHtml(data) {
     @media (max-width: 640px) {
       .page-title {
         white-space: normal;
-        font-size: 40px;
+        font-size: 36px;
       }
 
       .page-title span {
@@ -2108,7 +2198,7 @@ function buildHtml(data) {
       }
 
       .radar-square {
-        min-height: 340px;
+        min-height: 300px;
       }
 
       .viewer-topbar {
@@ -2155,11 +2245,6 @@ function buildHtml(data) {
             <h2>축별 등급 비교</h2>
             <div class="grade-compare-grid" id="grade-compare-grid"></div>
           </section>
-
-          <section class="panel report-picker-panel">
-            <h2>과거 리포트</h2>
-            <select class="report-select" id="report-select"></select>
-          </section>
         </div>
 
         <div class="hero-main">
@@ -2178,7 +2263,12 @@ function buildHtml(data) {
               <div class="radar-tooltip" id="radar-tooltip"></div>
             </div>
             <div class="legend" id="radar-legend"></div>
-            <p class="legend-note">이번주, 지난주, 전체평균을 각각 켜고 끌 수 있습니다. 축 라벨은 현재 등급 기준의 판정 기준을, 점은 등급·점수·판정 사유를 보여줍니다.</p>
+            <p class="legend-note">이번주, 지난주, 전체평균을 각각 켜고 끌 수 있습니다. 축 라벨 툴팁은 축 이름과 의미(description)를, 점 툴팁은 등급·점수와 기준 문장을 보여줍니다.</p>
+          </section>
+
+          <section class="panel report-picker-panel report-picker-panel-bottom">
+            <h2>과거 리포트</h2>
+            <select class="report-select" id="report-select"></select>
           </section>
 
         </div>
@@ -2422,21 +2512,30 @@ function buildHtml(data) {
       return (report.sections ?? []).find((section) => headingCandidates.includes(section.heading));
     }
 
-    function splitReasonParts(text) {
-      const raw = String(text ?? '').trim();
-      const match = raw.match(/^(.*?)(\s+\([^()]+\)\.?)$/);
-
-      if (!match) {
-        return {
-          main: raw,
-          meta: '',
-        };
-      }
-
-      return {
-        main: match[1].trim(),
-        meta: match[2].trim(),
+    function getStrengthActionByAxis(axisKey) {
+      const map = {
+        clarity: '요청 시작 문장을 "목표·완료조건·제약" 3요소로 고정해 같은 수준의 명확성을 반복 재현합니다.',
+        context_provision: '작업 시작 전에 경로·참고파일·현재상태를 체크리스트로 고정해 재설명 비용을 줄입니다.',
+        procedure_design: '작업을 단계화하고 각 단계 종료 기준을 먼저 선언해 안정적인 실행 흐름을 유지합니다.',
+        verifiability: '완료 보고를 "검증완료/미검증/잔여리스크" 3단 구조로 고정해 검증 품질을 끌어올립니다.',
+        recovery: '막힘 발생 시 원인 1줄, 대안 2개, 선택 1개 형식으로 복구 루프를 짧게 반복합니다.',
+        retrospective_continuity: '주간 회고 루틴을 고정 시간에 실행하고 전주 대비 개선 지표를 1~2개 추적합니다.',
       };
+
+      return map[axisKey] ?? '현재 강점을 유지할 수 있도록 동일한 작업 템플릿과 점검 루틴을 반복 적용합니다.';
+    }
+
+    function getImprovementActionByAxis(axisKey) {
+      const map = {
+        clarity: '요청문 첫 줄에 산출물 형식과 완료 조건을 함께 명시해 해석 오차를 줄입니다.',
+        context_provision: '참고 파일·환경 정보·현 상태를 함께 제공해 초기 탐색 시간을 단축합니다.',
+        procedure_design: '수정 전 계획(읽기→수정→검증)을 짧게 선언하고 단계별 결과를 확인합니다.',
+        verifiability: '검증 명령, 기대 결과, 실패 시 해석 기준을 세트로 제시해 검증력을 높입니다.',
+        recovery: '실패 시 즉시 우회안을 병렬로 제시하고 다음 선택을 빠르게 확정합니다.',
+        retrospective_continuity: '주차별 개선 목표를 하나로 좁혀 누적 개선이 끊기지 않도록 운영합니다.',
+      };
+
+      return map[axisKey] ?? '낮은 축은 작은 실험 단위로 쪼개어 매주 반복 개선하는 방식으로 보완합니다.';
     }
 
     function renderSummaryTable(report) {
@@ -2491,14 +2590,13 @@ function buildHtml(data) {
             '<thead><tr><th>평가축</th><th>점수</th><th>등급</th><th>판정 사유</th></tr></thead>' +
             '<tbody>' +
               (report.scores ?? []).map((axis) => {
-                const reason = splitReasonParts(axis.meaning);
+                const reasonText = axis.meaning || axis.criterion || '';
                 return '<tr>' +
                   '<td>' + escapeHtml(axis.label) + '</td>' +
                   '<td>' + escapeHtml(String(axis.score)) + '</td>' +
                   '<td><span class="detail-grade-badge">' + escapeHtml(axis.grade) + '</span></td>' +
                   '<td>' +
-                    '<span class="reason-main">' + escapeHtml(reason.main) + '</span>' +
-                    (reason.meta ? '<span class="reason-meta">' + escapeHtml(reason.meta) + '</span>' : '') +
+                    '<span class="reason-main">' + escapeHtml(reasonText) + '</span>' +
                   '</td>' +
                 '</tr>';
               }).join('') +
@@ -2508,17 +2606,75 @@ function buildHtml(data) {
       '</section>';
     }
 
+    function renderStrengthDetail(report) {
+      const strongest = [...(report.scores ?? [])]
+        .sort((left, right) => right.score - left.score)
+        .slice(0, 3);
+
+      if (!strongest.length) {
+        return '';
+      }
+
+      return '<section class="detail-section">' +
+        '<h2>강점축 상세</h2>' +
+        '<div class="detail-card">' +
+          '<ol class="detail-action-list">' +
+            strongest.map((axis) =>
+              '<li>' +
+                '<p class="detail-action-main"><strong>' + escapeHtml(axis.label) + '</strong> (' + escapeHtml(axis.grade) + ', ' + escapeHtml(String(axis.score)) + '점)</p>' +
+                '<p class="detail-action-sub">' + escapeHtml('현재 상태: ' + (axis.meaning || axis.description || '데이터 없음')) + '</p>' +
+                '<p class="detail-action-sub">' + escapeHtml('강화 전략: ' + getStrengthActionByAxis(axis.key)) + '</p>' +
+              '</li>'
+            ).join('') +
+          '</ol>' +
+        '</div>' +
+      '</section>';
+    }
+
+    function renderWeaknessDetail(report) {
+      const weakest = [...(report.scores ?? [])]
+        .sort((left, right) => left.score - right.score)
+        .slice(0, 3);
+
+      if (!weakest.length) {
+        return '';
+      }
+
+      return '<section class="detail-section">' +
+        '<h2>보완필요축 상세</h2>' +
+        '<div class="detail-card">' +
+          '<ol class="detail-action-list">' +
+            weakest.map((axis) =>
+              '<li>' +
+                '<p class="detail-action-main"><strong>' + escapeHtml(axis.label) + '</strong> (' + escapeHtml(axis.grade) + ', ' + escapeHtml(String(axis.score)) + '점)</p>' +
+                '<p class="detail-action-sub">' + escapeHtml('목표 기준: ' + (axis.criterion || axis.description || '기준 없음')) + '</p>' +
+                '<p class="detail-action-sub">' + escapeHtml('보완 전략: ' + getImprovementActionByAxis(axis.key)) + '</p>' +
+              '</li>'
+            ).join('') +
+          '</ol>' +
+        '</div>' +
+      '</section>';
+    }
+
     function renderRemainingSections(report) {
       const hiddenHeadings = new Set(['한 줄 진단', '이번 주 활동 요약', '타입 판정', '종합 타입', '6축 평가 결과', '타입 기준 참고']);
 
       return (report.sections ?? [])
         .filter((section) => !hiddenHeadings.has(section.heading))
-        .map((section) =>
-          '<section class="detail-section">' +
+        .map((section) => {
+          if (section.heading === '강점 축 요약' || section.heading === '강점축 상세') {
+            return renderStrengthDetail(report);
+          }
+
+          if (section.heading === '보완 필요 축 요약' || section.heading === '보완필요축 상세') {
+            return renderWeaknessDetail(report);
+          }
+
+          return '<section class="detail-section">' +
             '<h2>' + escapeHtml(section.heading) + '</h2>' +
             renderMarkdown(section.body, report.filePath) +
-          '</section>'
-        )
+          '</section>';
+        })
         .join('');
     }
 
@@ -2705,7 +2861,6 @@ function buildHtml(data) {
             currentBlock +
             previousBlock +
           '</div>' +
-          '<p class="grade-note">등급 변화 기준으로 ' + escapeHtml(deltaText) + ' 상태입니다.</p>' +
         '</article>';
       }).join('');
     }
@@ -2761,7 +2916,7 @@ function buildHtml(data) {
     }
 
     function getRadarGeometry() {
-      return { center: 180, radius: 118 };
+      return { center: 180, radius: 110 };
     }
 
     function polarToCartesian(center, radius, angleIndex, total) {
@@ -2784,28 +2939,19 @@ function buildHtml(data) {
       return points.map((point) => point.x.toFixed(2) + ',' + point.y.toFixed(2)).join(' ');
     }
 
-    function showTooltip(event, payload) {
+    function showTooltip(payload) {
       const tooltip = document.getElementById('radar-tooltip');
-      const wrap = document.getElementById('radar-wrap');
-      const rect = wrap.getBoundingClientRect();
-      const tooltipWidth = 240;
-      const left = Math.max(10, Math.min(event.clientX - rect.left + 14, rect.width - tooltipWidth));
-      const top = Math.max(10, event.clientY - rect.top - 8);
 
       if (payload.mode === 'label') {
         tooltip.innerHTML =
           '<div class="tooltip-title">' + escapeHtml(payload.label) + '</div>' +
-          '<div class="tooltip-score">현재 등급 ' + escapeHtml(payload.grade || '-') + '</div>' +
-          '<div class="tooltip-text">' + escapeHtml(payload.criterion || '') + '</div>';
+          '<div class="tooltip-sub">' + escapeHtml(payload.description || '') + '</div>';
       } else {
         tooltip.innerHTML =
           '<div class="tooltip-title">' + escapeHtml(payload.series) + '</div>' +
           '<div class="tooltip-score">' + escapeHtml(payload.grade || '-') + ' / ' + escapeHtml(String(payload.score)) + '점</div>' +
-          '<div class="tooltip-text">' + escapeHtml(payload.reason || '') + '</div>';
+          '<div class="tooltip-text">' + escapeHtml(payload.criterion || '') + '</div>';
       }
-
-      tooltip.style.left = left + 'px';
-      tooltip.style.top = top + 'px';
       tooltip.classList.add('is-visible');
     }
 
@@ -2833,10 +2979,10 @@ function buildHtml(data) {
       }).join('');
 
       const labels = currentScores.map((item, index) => {
-        const point = polarToCartesian(center, radius + 22, index, total);
+        const point = polarToCartesian(center, radius + 14, index, total);
         return '<g class="radar-label-group">' +
-          '<text class="radar-label" data-label="' + escapeHtml(item.label) + '" data-grade="' + escapeHtml(item.grade || '') + '" data-criterion="' + escapeHtml(item.criterion || item.meaning || '') + '" x="' + point.x.toFixed(2) + '" y="' + point.y.toFixed(2) + '">' + escapeHtml(item.label) + '</text>' +
-          '<text class="radar-grade-label" x="' + point.x.toFixed(2) + '" y="' + (point.y + 14).toFixed(2) + '">' + escapeHtml(item.grade || '-') + '</text>' +
+          '<text class="radar-label" data-label="' + escapeHtml(item.label) + '" data-description="' + escapeHtml(item.description || item.meaning || '') + '" data-criterion="' + escapeHtml(item.criterion || item.meaning || '') + '" x="' + point.x.toFixed(2) + '" y="' + point.y.toFixed(2) + '">' + escapeHtml(item.label) + '</text>' +
+          '<text class="radar-grade-label" x="' + point.x.toFixed(2) + '" y="' + (point.y + 13).toFixed(2) + '">' + escapeHtml(item.grade || '-') + '</text>' +
         '</g>';
       }).join('');
 
@@ -2865,7 +3011,7 @@ function buildHtml(data) {
         markup += '<polygon class="radar-shape" style="fill:' + dataset.color + ';stroke:' + dataset.color + ';fill-opacity:' + dataset.fillOpacity + ';stroke-width:' + dataset.width + ';" points="' + pointsToString(points) + '"></polygon>';
         markup += points.map((point, index) => {
           const item = dataset.scores[index];
-          return '<circle class="radar-point" data-series="' + escapeHtml(dataset.title) + '" data-score="' + escapeHtml(String(item.score)) + '" data-grade="' + escapeHtml(item.grade || '') + '" data-reason="' + escapeHtml(item.meaning || '') + '" cx="' + point.x.toFixed(2) + '" cy="' + point.y.toFixed(2) + '" r="' + dataset.pointRadius + '" fill="' + dataset.color + '" stroke="#ffffff" stroke-width="2"></circle>';
+          return '<circle class="radar-point" data-series="' + escapeHtml(dataset.title) + '" data-score="' + escapeHtml(String(item.score)) + '" data-grade="' + escapeHtml(item.grade || '') + '" data-criterion="' + escapeHtml(item.criterion || item.meaning || '') + '" cx="' + point.x.toFixed(2) + '" cy="' + point.y.toFixed(2) + '" r="' + dataset.pointRadius + '" fill="' + dataset.color + '" stroke="#ffffff" stroke-width="2"></circle>';
         }).join('');
       }
 
@@ -2877,12 +3023,12 @@ function buildHtml(data) {
         const payload = {
           mode: 'label',
           label: node.getAttribute('data-label'),
-          grade: node.getAttribute('data-grade'),
+          description: node.getAttribute('data-description'),
           criterion: node.getAttribute('data-criterion'),
         };
 
-        node.addEventListener('mouseenter', (event) => showTooltip(event, payload));
-        node.addEventListener('mousemove', (event) => showTooltip(event, payload));
+        node.addEventListener('mouseenter', () => showTooltip(payload));
+        node.addEventListener('mousemove', () => showTooltip(payload));
         node.addEventListener('mouseleave', hideTooltip);
       });
 
@@ -2892,11 +3038,11 @@ function buildHtml(data) {
           series: node.getAttribute('data-series'),
           score: node.getAttribute('data-score'),
           grade: node.getAttribute('data-grade'),
-          reason: node.getAttribute('data-reason'),
+          criterion: node.getAttribute('data-criterion'),
         };
 
-        node.addEventListener('mouseenter', (event) => showTooltip(event, payload));
-        node.addEventListener('mousemove', (event) => showTooltip(event, payload));
+        node.addEventListener('mouseenter', () => showTooltip(payload));
+        node.addEventListener('mousemove', () => showTooltip(payload));
         node.addEventListener('mouseleave', hideTooltip);
       });
     }
@@ -3072,6 +3218,7 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });
+
 
 
 

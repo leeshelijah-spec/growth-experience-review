@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.1.0 - 2026-04-06
+## 2026-04-10
+
+- Added dashboard favicon links and bundled [config/favicon.ico](./config/favicon.ico) so browser tabs show a project icon.
+- Updated `run-weekly-review.cmd` to auto-open the generated dashboard by default and support `--no-open` for report-only runs.
+- Refined radar tooltip behavior so tooltips stay centered inside the chart surface and label tooltips show axis name plus description.
+- Increased tooltip readability with larger type, stronger weight, wider container sizing, and spacing tuned for Korean copy.
+- Tightened dashboard layout density by adjusting scale, panel spacing, radar area proportions, and report picker placement.
+- Expanded detailed report rendering with explicit strength/weakness action sections driven by axis-based guidance helpers.
+- Removed outdated [RELEASING.md](./RELEASING.md) release instructions from the repository root.
+
+## 2026-04-06
 
 - Split the mentoring workflow into a standalone project folder.
 - Added GitHub-ready packaging files and release notes.
