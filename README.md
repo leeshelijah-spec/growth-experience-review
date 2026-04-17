@@ -58,6 +58,8 @@ Examples:
   - [scripts/generate-weekly-review.mjs](./scripts/generate-weekly-review.mjs)
 - HTML dashboard generator:
   - [scripts/build-dashboard.mjs](./scripts/build-dashboard.mjs)
+- Feature update archive:
+  - [docs/feature-updates](./docs/feature-updates)
 - Generated artifacts:
   - [generated/reports/LATEST.md](./generated/reports/LATEST.md)
   - [generated/reports/TIMELINE.md](./generated/reports/TIMELINE.md)
@@ -113,10 +115,6 @@ run-weekly-review.cmd
 - Weekly reports also include a structural summary table for the four enabled axes and show grade adjustments when structural rules trigger.
 - The dashboard keeps type, warning state, and evidence visually separated.
 - Timeline and week-to-week comparisons continue to work.
-
-## Change History
-
-- See [CHANGELOG.md](./CHANGELOG.md) for date-based changes through April 10, 2026.
 
 ## Special thanks 
 

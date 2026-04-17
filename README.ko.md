@@ -58,6 +58,8 @@ Growth Experience Review는 Codex 아카이브 세션을 주간 단위로 분석
   - [scripts/generate-weekly-review.mjs](./scripts/generate-weekly-review.mjs)
 - HTML 대시보드 생성:
   - [scripts/build-dashboard.mjs](./scripts/build-dashboard.mjs)
+- 기능 업데이트 아카이브:
+  - [docs/feature-updates](./docs/feature-updates)
 - 생성물:
   - [generated/reports/LATEST.md](./generated/reports/LATEST.md)
   - [generated/reports/TIMELINE.md](./generated/reports/TIMELINE.md)
@@ -113,10 +115,6 @@ run-weekly-review.cmd
 - 리포트에 4축 구조 판정 요약 표가 추가되고, 구조 규칙이 발동하면 보정 결과가 함께 표시되는지
 - 대시보드에서 타입, 경고 상태, 근거가 시각적으로 분리되어 보이는지
 - 타임라인과 주차 비교가 계속 동작하는지
-
-## 변경 이력
-
-- 2026-04-10까지의 변경 사항은 [CHANGELOG.md](./CHANGELOG.md)에서 날짜별로 확인할 수 있습니다.
 
 ## 감사의 인사
 - 아이디어의 출발점이 된 [fivetaku/vibe-sunsang](https://github.com/fivetaku/vibe-sunsang)에 감사를 전합니다.
