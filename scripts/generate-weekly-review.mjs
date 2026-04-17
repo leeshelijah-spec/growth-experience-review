@@ -5,7 +5,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   evaluateProfile,
+  gradeRank,
   getAxisByKey,
+  isGradeAtLeast,
   loadEvaluationConfig,
   scoreToGrade,
   scoreToGradeDetail,
@@ -16,6 +18,56 @@ const projectDir = path.resolve(scriptDir, '..');
 const DEFAULT_SOURCE_DIR = path.join(projectDir, 'generated', 'archived_sessions_md');
 const DEFAULT_OUTPUT_DIR = path.join(projectDir, 'generated', 'reports');
 const DEFAULT_TIMEZONE = 'Asia/Seoul';
+const STRUCTURAL_CHECK_DETECTORS = {
+  goal_present: [
+    /목표|objective|목적은|목적:|하려는|필요합니다|필요하다|수정해야|구현해야|추가해야/i,
+  ],
+  output_defined: [
+    /산출물|output|결과물|최종 결과|리포트|보고서|스크립트|문서|파일을|파일로|출력 형식/i,
+  ],
+  constraints_defined: [
+    /제약조건|constraints|제약|주의사항|유지\b|고정\b|minimal diff|UTF-8|한국어 출력 유지/i,
+  ],
+  completion_criteria: [
+    /완료 기준|성공 기준|기대 결과|expected outcome|작동해야|되어야 한다|검증한 항목|완료 후/i,
+  ],
+  current_state: [
+    /현재 상태|현 상태|지금 상태|현재는|지금은|현재 .*동작|문제점|기존에는/i,
+  ],
+  references: [
+    /참고 파일|참고 자료|참고 문서|reference|예시|README|Files mentioned by the user|https?:\/\//i,
+  ],
+  file_or_path: [
+    /작업 경로|파일 경로|경로:|폴더|C:\\|`[^`]*[\\/][^`]*`|\/[A-Za-z0-9._/-]+/i,
+  ],
+  purpose: [
+    /배경|context|전제|왜냐하면|이유는|위해|목적|상황/i,
+  ],
+  verification_criteria: [
+    /검증 기준|확인 기준|테스트 기준|성공 기준|검증한 항목|확인 항목/i,
+  ],
+  comparison_basis: [
+    /비교 기준|비교|수정 전|수정 후|전후 비교|before|after|같은 형식으로 비교/i,
+  ],
+  unverified_items: [
+    /미검증|미확인|검증하지 못한|확인하지 못한/i,
+  ],
+  risk_remaining: [
+    /남은 리스크|잔여 리스크|위험 요소|주의할 리스크|남은 위험/i,
+  ],
+  problem_identified: [
+    /문제|오류|에러|실패|막힘|동작하지 않|안 되|고장/i,
+  ],
+  cause_hypothesis: [
+    /원인|가설|추정|로 보입니다|때문에|로 추정|가능성이 높/i,
+  ],
+  alternatives_present: [
+    /우회안|대안|옵션 1|옵션 2|방안 1|방안 2|각각 장단점|대안 2개/i,
+  ],
+  decision_basis: [
+    /권장안|추천|장단점|판단 근거|선택 기준|권고/i,
+  ],
+};
 
 function parseArgs(argv) {
   const options = {
@@ -237,6 +289,225 @@ function collectSignals(messages) {
   };
 }
 
+function getRelevantUserMessageText(session) {
+  return session.userMessages
+    .filter((message) => !message.corrupted)
+    .map((message) => message.text.trim())
+    .filter((text) => text && !isBoilerplateUserMessage(text) && !text.startsWith('<turn_aborted>'))
+    .join('\n\n');
+}
+
+function detectStructuralCheck(text, checkKey) {
+  const patterns = STRUCTURAL_CHECK_DETECTORS[checkKey] ?? [];
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+function buildRequirementStatus(requiredKeys, checks) {
+  const keys = Array.isArray(requiredKeys) ? requiredKeys : [];
+  const missing = keys.filter((key) => !checks[key]?.passed);
+
+  return {
+    keys,
+    missing,
+    satisfied: keys.length > 0 && missing.length === 0,
+  };
+}
+
+function buildStructuralAssessment(sessions, evaluationConfig) {
+  const relevantSessions = sessions
+    .map((session) => ({
+      sessionId: session.sessionId,
+      startedAt: session.startedAt,
+      text: getRelevantUserMessageText(session),
+    }))
+    .filter((session) => session.text);
+
+  const byAxis = {};
+
+  for (const axis of evaluationConfig.axes) {
+    const structuralChecks = Array.isArray(axis.structuralChecks) ? axis.structuralChecks : [];
+
+    if (!structuralChecks.length) {
+      byAxis[axis.key] = {
+        enabled: false,
+        label: axis.name,
+        structuralChecks: [],
+        checks: {},
+        requiredForA: buildRequirementStatus([], {}),
+        requiredForB: buildRequirementStatus([], {}),
+        sessionChecks: [],
+        passedCount: 0,
+        totalChecks: 0,
+      };
+      continue;
+    }
+
+    const sessionChecks = relevantSessions.map((session) => ({
+      sessionId: session.sessionId,
+      startedAt: session.startedAt,
+      checks: Object.fromEntries(
+        structuralChecks.map((check) => [check.key, detectStructuralCheck(session.text, check.key)])
+      ),
+    }));
+
+    const checks = Object.fromEntries(
+      structuralChecks.map((check) => {
+        const count = sessionChecks.filter((entry) => entry.checks[check.key]).length;
+        return [
+          check.key,
+          {
+            key: check.key,
+            label: check.label ?? check.key,
+            passed: count > 0,
+            count,
+          },
+        ];
+      })
+    );
+
+    byAxis[axis.key] = {
+      enabled: true,
+      label: axis.name,
+      structuralChecks,
+      checks,
+      requiredForA: buildRequirementStatus(axis.requiredForA, checks),
+      requiredForB: buildRequirementStatus(axis.requiredForB, checks),
+      sessionChecks,
+      passedCount: structuralChecks.filter((check) => checks[check.key]?.passed).length,
+      totalChecks: structuralChecks.length,
+    };
+  }
+
+  return {
+    byAxis,
+  };
+}
+
+function gradeDetailByGrade(grade, evaluationConfig) {
+  const matched = evaluationConfig.gradeScale.find((item) => item.grade === grade);
+  return {
+    grade,
+    summary: matched?.summary ?? '',
+    min: matched?.min ?? 0,
+    max: matched?.max ?? 100,
+  };
+}
+
+function pickHigherGrade(left, right) {
+  return gradeRank(right) > gradeRank(left) ? right : left;
+}
+
+function pickLowerGrade(left, right) {
+  return gradeRank(right) < gradeRank(left) ? right : left;
+}
+
+function structuralRuleMatches(rule, structuralAxis) {
+  if (!structuralAxis?.enabled) {
+    return false;
+  }
+
+  const scope = rule.scope ?? 'aggregate';
+
+  if (Array.isArray(rule.whenAllOf)) {
+    if (scope === 'same_session') {
+      return structuralAxis.sessionChecks.some((entry) => rule.whenAllOf.every((key) => entry.checks[key]));
+    }
+
+    return rule.whenAllOf.every((key) => structuralAxis.checks[key]?.passed);
+  }
+
+  if (Array.isArray(rule.whenMissingAnyOf)) {
+    return rule.whenMissingAnyOf.some((key) => !structuralAxis.checks[key]?.passed);
+  }
+
+  return false;
+}
+
+function applyStructuralAdjustment(axis, structuralAxis, evaluationConfig) {
+  const rawGrade = axis.rawGrade;
+
+  if (!structuralAxis?.enabled) {
+    return {
+      grade: rawGrade,
+      gradeDetail: gradeDetailByGrade(rawGrade, evaluationConfig),
+      changed: false,
+      reason: '',
+    };
+  }
+
+  const matchedFloorRules = (axis.floorRules ?? []).filter((rule) => structuralRuleMatches(rule, structuralAxis));
+  const matchedCapRules = (axis.capRules ?? []).filter((rule) => structuralRuleMatches(rule, structuralAxis));
+
+  const raisedGrade = matchedFloorRules.reduce((grade, rule) => pickHigherGrade(grade, rule.minGrade), rawGrade);
+  const finalGrade = matchedCapRules.reduce((grade, rule) => pickLowerGrade(grade, rule.maxGrade), raisedGrade);
+  const reasonSource = gradeRank(finalGrade) < gradeRank(rawGrade) ? matchedCapRules : matchedFloorRules;
+
+  return {
+    grade: finalGrade,
+    gradeDetail: gradeDetailByGrade(finalGrade, evaluationConfig),
+    changed: finalGrade !== rawGrade,
+    reason: reasonSource.map((rule) => rule.reason).filter(Boolean).join(' / '),
+  };
+}
+
+function formatStructuralCheckNames(checkKeys, structuralAxis) {
+  return (Array.isArray(checkKeys) ? checkKeys : [])
+    .map((key) => structuralAxis.checks[key]?.label ?? key)
+    .join(', ');
+}
+
+function buildStructuralReason(structuralAxis, adjustment) {
+  if (!structuralAxis?.enabled) {
+    return '';
+  }
+
+  const satisfied = structuralAxis.structuralChecks
+    .filter((check) => structuralAxis.checks[check.key]?.passed)
+    .map((check) => check.label ?? check.key);
+  const missing = structuralAxis.structuralChecks
+    .filter((check) => !structuralAxis.checks[check.key]?.passed)
+    .map((check) => check.label ?? check.key);
+  const parts = [
+    `구조 요소 ${structuralAxis.passedCount}/${structuralAxis.totalChecks} 충족`,
+  ];
+
+  if (satisfied.length) {
+    parts.push(`충족: ${satisfied.join(', ')}`);
+  }
+
+  if (missing.length) {
+    parts.push(`부족: ${missing.join(', ')}`);
+  }
+
+  let summary = `${parts.join(' / ')}.`;
+
+  if (adjustment.changed && adjustment.reason) {
+    summary += ` 구조 보정으로 ${adjustment.rawGrade}에서 ${adjustment.grade}로 조정했습니다 (${adjustment.reason}).`;
+  } else if (adjustment.changed) {
+    summary += ` 구조 보정으로 ${adjustment.rawGrade}에서 ${adjustment.grade}로 조정했습니다.`;
+  }
+
+  return summary;
+}
+
+function compareAxesDescending(left, right) {
+  const gradeDiff = gradeRank(right.grade) - gradeRank(left.grade);
+  if (gradeDiff !== 0) {
+    return gradeDiff;
+  }
+
+  return right.score - left.score;
+}
+
+function compareAxesAscending(left, right) {
+  const gradeDiff = gradeRank(left.grade) - gradeRank(right.grade);
+  if (gradeDiff !== 0) {
+    return gradeDiff;
+  }
+
+  return left.score - right.score;
+}
+
 function summarizeWorkspaces(sessions) {
   const counts = new Map();
 
@@ -370,7 +641,7 @@ function smoothScores(rawScores, previousScoreByKey) {
   return smoothed;
 }
 
-function buildAxisReason(axisKey, weekStats, grade, criterion) {
+function buildSignalAxisReason(axisKey, weekStats, grade, criterion) {
   const totalUserMessages = Math.max(weekStats.totalUserMessages, 1);
   const sessionCount = Math.max(weekStats.sessionCount, 1);
   const signalRate = {
@@ -397,25 +668,51 @@ function buildAxisReason(axisKey, weekStats, grade, criterion) {
   return `${criterion} (관찰 신호 ${signalRate[axisKey]}%, ${auxiliary[axisKey] ?? '행동 패턴 기준'}).`;
 }
 
+function buildAxisReason(axisKey, weekStats, grade, criterion, structuralAxis, adjustment) {
+  const signalReason = buildSignalAxisReason(axisKey, weekStats, grade, criterion);
+  const structuralReason = buildStructuralReason(structuralAxis, adjustment);
+  return structuralReason ? `${signalReason} ${structuralReason}` : signalReason;
+}
+
 function buildScorecard(weekStats, evaluationConfig, previousScoreByKey) {
   const rawScores = buildRawScoreMap(weekStats);
   const finalScores = smoothScores(rawScores, previousScoreByKey);
   const axisByKey = getAxisByKey(evaluationConfig);
+  const structuralAssessment = buildStructuralAssessment(weekStats.sessions, evaluationConfig);
 
   const scorecard = evaluationConfig.axes.map((axis) => {
     const score = Math.round(finalScores[axis.key] ?? 0);
-    const gradeDetail = scoreToGradeDetail(score, evaluationConfig);
-    const criterion = axis.gradeCriteria?.[gradeDetail.grade] ?? '';
+    const rawGradeDetail = scoreToGradeDetail(score, evaluationConfig);
+    const structuralAxis = structuralAssessment.byAxis[axis.key];
+    const adjustment = applyStructuralAdjustment(
+      {
+        ...axis,
+        rawGrade: rawGradeDetail.grade,
+      },
+      structuralAxis,
+      evaluationConfig
+    );
+    const criterion = axis.gradeCriteria?.[adjustment.grade] ?? '';
 
     return {
       key: axis.key,
       label: axis.name,
       description: axis.description,
       score,
-      grade: gradeDetail.grade,
-      gradeSummary: gradeDetail.summary,
+      grade: adjustment.grade,
+      gradeSummary: adjustment.gradeDetail.summary,
       criterion,
-      reason: buildAxisReason(axis.key, weekStats, gradeDetail.grade, criterion),
+      rawGrade: rawGradeDetail.grade,
+      rawCriterion: axis.gradeCriteria?.[rawGradeDetail.grade] ?? '',
+      reason: buildAxisReason(axis.key, weekStats, adjustment.grade, criterion, structuralAxis, {
+        ...adjustment,
+        rawGrade: rawGradeDetail.grade,
+      }),
+      structural: structuralAxis,
+      adjustment: {
+        ...adjustment,
+        rawGrade: rawGradeDetail.grade,
+      },
       gradeCriteria: axisByKey[axis.key]?.gradeCriteria ?? {},
     };
   });
@@ -423,6 +720,7 @@ function buildScorecard(weekStats, evaluationConfig, previousScoreByKey) {
   return {
     rawScores,
     finalScores,
+    structuralAssessment,
     scorecard,
   };
 }
@@ -439,10 +737,11 @@ function computeAverage(scorecard, evaluationConfig) {
 }
 
 function pickTopAndBottom(scorecard) {
-  const sorted = [...scorecard].sort((left, right) => right.score - left.score);
+  const sortedDescending = [...scorecard].sort(compareAxesDescending);
+  const sortedAscending = [...scorecard].sort(compareAxesAscending);
   return {
-    strongest: sorted.slice(0, 2),
-    weakest: sorted.slice(-2).reverse(),
+    strongest: sortedDescending.slice(0, 2),
+    weakest: sortedAscending.slice(0, 2),
   };
 }
 
@@ -454,12 +753,12 @@ function buildSummaryLine(profile, topBottom) {
 }
 
 function buildStrengths(scorecard) {
-  const topAxes = [...scorecard].sort((a, b) => b.score - a.score).slice(0, 3);
+  const topAxes = [...scorecard].sort(compareAxesDescending).slice(0, 3);
   return topAxes.map((axis) => `${axis.label}: ${axis.grade} 등급 (${axis.reason})`);
 }
 
 function buildImprovements(scorecard) {
-  const weakest = [...scorecard].sort((a, b) => a.score - b.score).slice(0, 3);
+  const weakest = [...scorecard].sort(compareAxesAscending).slice(0, 3);
   return weakest.map((axis) => `${axis.label}: ${axis.grade} 등급으로 판정되어, ${axis.gradeCriteria.C ?? axis.criterion}`);
 }
 
@@ -467,27 +766,27 @@ function buildActionPlan(scorecard) {
   const byKey = Object.fromEntries(scorecard.map((axis) => [axis.key, axis]));
   const plans = [];
 
-  if ((byKey.clarity?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.clarity?.grade ?? 'E', 'B')) {
     plans.push('요청 시작 시 "목표, 산출물, 제약조건" 3요소를 한 문단으로 먼저 고정합니다.');
   }
 
-  if ((byKey.context_provision?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.context_provision?.grade ?? 'E', 'B')) {
     plans.push('첫 메시지에 작업 경로, 참고 파일, 현재 상태를 함께 제시해 맥락 재수집을 줄입니다.');
   }
 
-  if ((byKey.procedure_design?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.procedure_design?.grade ?? 'E', 'B')) {
     plans.push('작업을 "읽기 → 계획 → 수정 → 검증" 순서로 분리해 단계별 산출을 확인합니다.');
   }
 
-  if ((byKey.verifiability?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.verifiability?.grade ?? 'E', 'B')) {
     plans.push('작업 종료 시 "검증 완료 / 미검증 / 남은 리스크" 3항목을 고정 포맷으로 요청합니다.');
   }
 
-  if ((byKey.recovery?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.recovery?.grade ?? 'E', 'B')) {
     plans.push('막힘 발생 시 원인 1줄 + 대안 2개 + 다음 선택 1개를 즉시 정리하도록 요청합니다.');
   }
 
-  if ((byKey.retrospective_continuity?.score ?? 0) < 75) {
+  if (!isGradeAtLeast(byKey.retrospective_continuity?.grade ?? 'E', 'B')) {
     plans.push('주 1회 고정 시간에 `npm run weekly`를 실행해 회고 루틴을 끊기지 않게 유지합니다.');
   }
 
@@ -499,7 +798,7 @@ function buildActionPlan(scorecard) {
 }
 
 function buildPromptExamples(scorecard) {
-  const weakest = [...scorecard].sort((left, right) => left.score - right.score).slice(0, 2);
+  const weakest = [...scorecard].sort(compareAxesAscending).slice(0, 2);
   const examples = [];
 
   for (const axis of weakest) {
@@ -533,6 +832,38 @@ function buildPromptExamples(scorecard) {
   }
 
   return [...new Set(examples)].slice(0, 3);
+}
+
+function formatStructuralAssessmentTable(scorecard) {
+  const structuralAxes = scorecard.filter((axis) => axis.structural?.enabled);
+
+  if (!structuralAxes.length) {
+    return '- 이번 단계에서 구조 판정이 적용된 축이 없습니다.';
+  }
+
+  const lines = [
+    '| 평가축 | 구조 충족 요약 | 보정 결과 |',
+    '| --- | --- | --- |',
+  ];
+
+  for (const axis of structuralAxes) {
+    const satisfied = axis.structural.structuralChecks
+      .filter((check) => axis.structural.checks[check.key]?.passed)
+      .map((check) => check.label ?? check.key)
+      .join(', ') || '없음';
+    const missing = axis.structural.structuralChecks
+      .filter((check) => !axis.structural.checks[check.key]?.passed)
+      .map((check) => check.label ?? check.key)
+      .join(', ') || '없음';
+    const summary = `${axis.structural.passedCount}/${axis.structural.totalChecks}<br>충족: ${satisfied}<br>부족: ${missing}`;
+    const adjustment = axis.adjustment.changed
+      ? `${axis.adjustment.rawGrade} → ${axis.grade}<br>${axis.adjustment.reason || '구조 보정 적용'}`
+      : '변경 없음';
+
+    lines.push(`| ${axis.label} | ${summary} | ${adjustment} |`);
+  }
+
+  return lines.join('\n');
 }
 
 function formatSummaryTable(rows) {
@@ -633,6 +964,10 @@ ${formatSummaryTable(summaryRows)}
 ## 6축 평가 결과
 
 ${formatEvaluationTable(scorecard)}
+
+## 구조 판정 요약
+
+${formatStructuralAssessmentTable(scorecard)}
 
 ## 강점 축 요약
 

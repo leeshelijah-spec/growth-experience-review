@@ -72,6 +72,11 @@ Examples:
 - Radar tooltips are fixed at the visual center of the chart area and use larger typography for quicker reading.
 - The detail modal reorganizes each weekly report into a cleaner dashboard-oriented layout.
 - Type reference guidance is shown from the main dashboard through a dedicated popup instead of being repeated in every weekly report.
+- Weekly reports now add a structural judgement summary for `Clarity`, `Context Provision`, `Verifiability`, and `Recovery` while preserving the original six-axis table.
+
+## Latest Update
+
+- `2026-04-17`: [Structural judgement layer phase 1](./docs/feature-updates/2026-04-17.md)
 
 ## Run
 
@@ -105,6 +110,7 @@ run-weekly-review.cmd
 - Every week resolves to one of the six fixed types.
 - `Reversed` appears only as a warning layer.
 - Weekly reports include type reasoning and reversed reasoning.
+- Weekly reports also include a structural summary table for the four enabled axes and show grade adjustments when structural rules trigger.
 - The dashboard keeps type, warning state, and evidence visually separated.
 - Timeline and week-to-week comparisons continue to work.
 
