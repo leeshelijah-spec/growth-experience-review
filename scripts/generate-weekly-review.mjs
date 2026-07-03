@@ -26,10 +26,10 @@ const STRUCTURAL_CHECK_DETECTORS = {
     /산출물|output|결과물|최종 결과|리포트|보고서|스크립트|문서|파일을|파일로|출력 형식/i,
   ],
   constraints_defined: [
-    /제약조건|constraints|제약|주의사항|유지\b|고정\b|minimal diff|UTF-8|한국어 출력 유지/i,
+    /제약조건|constraints|제약|주의사항|유지\b|고정\b|minimal diff|UTF-8|한국어 출력 유지|허용 범위|권한|자율 실행|중단 조건/i,
   ],
   completion_criteria: [
-    /완료 기준|성공 기준|기대 결과|expected outcome|작동해야|되어야 한다|검증한 항목|완료 후/i,
+    /완료 기준|성공 기준|기대 결과|expected outcome|acceptance criteria|작동해야|되어야 한다|검증한 항목|완료 후|좋은 결과|성공 조건/i,
   ],
   current_state: [
     /현재 상태|현 상태|지금 상태|현재는|지금은|현재 .*동작|문제점|기존에는/i,
@@ -66,6 +66,18 @@ const STRUCTURAL_CHECK_DETECTORS = {
   ],
   decision_basis: [
     /권장안|추천|장단점|판단 근거|선택 기준|권고/i,
+  ],
+  autonomy_scope: [
+    /자율|알아서|추가 질문 없이|직접 수정|직접 실행|가능한 범위|가능한 한|맡깁니다|진행해주세요/i,
+  ],
+  authority_boundary: [
+    /권한|허용 범위|승인|시스템 권한|수정 가능|변경 가능|하지 말|유지|고정|제약/i,
+  ],
+  stopping_condition: [
+    /중단 조건|막히면|막힐 경우|불가능하면|권한 요청|승인 여부|미검증|남은 리스크|리스크/i,
+  ],
+  sequence_when_needed: [
+    /읽기|계획|수정|검증|먼저|다음|이후|마지막|순서|단계|전후 비교/i,
   ],
 };
 
@@ -279,10 +291,13 @@ function collectSignals(messages) {
 
   return {
     explicitRequestCount: signal(/해주세요|해줘|만들|구현|분석|정리|저장|수정|보완|설계|자동화|리포트|원해요|원합니다/i),
-    outcomeCount: signal(/결과|출력|보고서|리포트|폴더|파일|형식|프로그램|스크립트|cmd|md/i),
-    contextCount: signal(/README|파일|폴더|경로|workdir|cwd|환경|버전|참고|첨부|예시|현재|기존|export|archived_sessions_md|`[^`]+`|[A-Za-z]:\\|\/[A-Za-z0-9._-]+/i),
-    verificationCount: signal(/검증|확인|테스트|점검|체크|비교|리뷰|실행해|실행하고|직접 확인|남은 위험|리스크/i),
-    sequencingCount: signal(/먼저|다음|이후|마지막|순서|단계|주간|매주|매월|1\.|2\.|3\./i),
+    outcomeCount: signal(/결과|출력|산출물|보고서|리포트|폴더|파일|형식|프로그램|스크립트|cmd|md|기대 결과|성공 기준/i),
+    successCriteriaCount: signal(/완료 기준|성공 기준|기대 결과|acceptance criteria|작동해야|되어야 한다|검증한 항목|완료 후|좋은 결과|성공 조건/i),
+    contextCount: signal(/README|파일|폴더|경로|workdir|cwd|환경|버전|참고|첨부|예시|현재|현 상태|기존|전제|배경|목적|export|archived_sessions_md|`[^`]+`|[A-Za-z]:\\|\/[A-Za-z0-9._-]+/i),
+    verificationCount: signal(/검증|확인|테스트|점검|체크|비교|리뷰|실행해|실행하고|직접 확인|남은 위험|리스크|미검증|근거|증거|출처/i),
+    evidenceCount: signal(/근거|증거|출처|로그|테스트 결과|검증 결과|비교 결과|미검증|남은 리스크|잔여 리스크/i),
+    sequencingCount: signal(/먼저|다음|이후|마지막|순서|단계|주간|매주|매월|읽기|계획|수정|검증|1\.|2\.|3\./i),
+    delegationCount: signal(/자율|알아서|추가 질문 없이|직접 수정|직접 실행|가능한 범위|가능한 한|허용 범위|권한|중단 조건|시스템 권한|승인|막히면|진행해주세요/i),
     recoveryCount: signal(/안 되|에러|오류|막히|다시|수정|보완|개선|문제|리팩토링|고쳐/i),
     reflectionCount: signal(/회고|멘토링|성장|잘못|아쉬|배우|실력|습관|패턴/i),
     totalChars: joined.length,
@@ -578,30 +593,36 @@ function buildRawScoreMap(weekStats) {
   const cleanMessageRatio = clamp(1 - safeDivide(weekStats.corruptedUserMessages, totalUserMessages), 0, 1);
 
   const clarityCore =
-    0.35 * safeDivide(weekStats.signals.explicitRequestCount, totalUserMessages) +
-    0.25 * safeDivide(weekStats.signals.outcomeCount, totalUserMessages) +
-    0.2 * clamp(averageUserTokens / 20, 0, 1) +
+    0.3 * safeDivide(weekStats.signals.explicitRequestCount, totalUserMessages) +
+    0.3 * safeDivide(weekStats.signals.outcomeCount, totalUserMessages) +
+    0.1 * safeDivide(weekStats.signals.successCriteriaCount, totalUserMessages) +
+    0.1 * clamp(averageUserTokens / 20, 0, 1) +
     0.2 * cleanMessageRatio;
 
   const contextCore =
-    0.55 * safeDivide(weekStats.signals.contextCount, totalUserMessages) +
+    0.5 * safeDivide(weekStats.signals.contextCount, totalUserMessages) +
     0.25 * safeDivide(weekStats.sessionsWithCwd, Math.max(weekStats.sessionCount, 1)) +
-    0.2 * safeDivide(weekStats.signals.outcomeCount, totalUserMessages);
+    0.15 * safeDivide(weekStats.signals.outcomeCount, totalUserMessages) +
+    0.1 * safeDivide(weekStats.signals.successCriteriaCount, totalUserMessages);
 
   const procedureCore =
-    0.45 * safeDivide(weekStats.signals.sequencingCount, totalUserMessages) +
-    0.3 * clamp((averageUserTurns - 1) / 2, 0, 1) +
-    0.25 * safeDivide(weekStats.multiTurnSessions, Math.max(weekStats.sessionCount, 1));
+    0.25 * safeDivide(weekStats.signals.delegationCount, totalUserMessages) +
+    0.3 * safeDivide(weekStats.signals.sequencingCount, totalUserMessages) +
+    0.1 * safeDivide(weekStats.signals.successCriteriaCount, totalUserMessages) +
+    0.15 * clamp((averageUserTurns - 1) / 2, 0, 1) +
+    0.2 * safeDivide(weekStats.multiTurnSessions, Math.max(weekStats.sessionCount, 1));
 
   const verifiabilityCore =
-    0.55 * safeDivide(weekStats.signals.verificationCount, totalUserMessages) +
-    0.3 * clamp(toolEntriesPerSession / 8, 0, 1) +
+    0.5 * safeDivide(weekStats.signals.verificationCount, totalUserMessages) +
+    0.1 * safeDivide(weekStats.signals.evidenceCount, totalUserMessages) +
+    0.25 * clamp(toolEntriesPerSession / 8, 0, 1) +
     0.15 * safeDivide(weekStats.sessionsWithVerificationIntent, Math.max(weekStats.sessionCount, 1));
 
   const recoveryCore =
-    0.45 * safeDivide(weekStats.signals.recoveryCount, totalUserMessages) +
-    0.3 * safeDivide(weekStats.signals.reflectionCount, totalUserMessages) +
-    0.25 * safeDivide(weekStats.followUpSessions, Math.max(weekStats.sessionCount, 1));
+    0.4 * safeDivide(weekStats.signals.recoveryCount, totalUserMessages) +
+    0.25 * safeDivide(weekStats.signals.reflectionCount, totalUserMessages) +
+    0.2 * safeDivide(weekStats.followUpSessions, Math.max(weekStats.sessionCount, 1)) +
+    0.15 * safeDivide(weekStats.signals.delegationCount, totalUserMessages);
 
   const retrospectiveCore =
     0.45 * activeDaysRatio +
@@ -645,17 +666,17 @@ function buildSignalAxisReason(axisKey, weekStats, grade, criterion) {
   const totalUserMessages = Math.max(weekStats.totalUserMessages, 1);
   const sessionCount = Math.max(weekStats.sessionCount, 1);
   const signalRate = {
-    clarity: toPercent(safeDivide(weekStats.signals.explicitRequestCount + weekStats.signals.outcomeCount, totalUserMessages)),
+    clarity: toPercent(safeDivide(weekStats.signals.explicitRequestCount + weekStats.signals.outcomeCount + weekStats.signals.successCriteriaCount, totalUserMessages)),
     context_provision: toPercent(safeDivide(weekStats.signals.contextCount, totalUserMessages)),
-    procedure_design: toPercent(safeDivide(weekStats.signals.sequencingCount, totalUserMessages)),
-    verifiability: toPercent(safeDivide(weekStats.signals.verificationCount, totalUserMessages)),
+    procedure_design: toPercent(safeDivide(weekStats.signals.delegationCount + weekStats.signals.sequencingCount, totalUserMessages)),
+    verifiability: toPercent(safeDivide(weekStats.signals.verificationCount + weekStats.signals.evidenceCount, totalUserMessages)),
     recovery: toPercent(safeDivide(weekStats.signals.recoveryCount, totalUserMessages)),
     retrospective_continuity: toPercent(clamp(weekStats.activeDays.size / 5, 0, 1)),
   };
 
   const auxiliary = {
     context_provision: `${toPercent(safeDivide(weekStats.sessionsWithCwd, sessionCount))}% 세션에서 작업 경로 공유`,
-    procedure_design: `${toPercent(safeDivide(weekStats.multiTurnSessions, sessionCount))}% 세션이 다중 턴으로 진행`,
+    procedure_design: `${toPercent(safeDivide(weekStats.signals.delegationCount, totalUserMessages))}% 메시지에서 자율 실행·권한 신호 확인`,
     verifiability: `${toPercent(safeDivide(weekStats.sessionsWithVerificationIntent, sessionCount))}% 세션에서 검증 의도 확인`,
     recovery: `${toPercent(safeDivide(weekStats.followUpSessions, sessionCount))}% 세션이 후속 대응으로 연결`,
     retrospective_continuity: `활동일 ${weekStats.activeDays.size}일 / 세션 ${weekStats.sessionCount}건`,
@@ -803,7 +824,7 @@ function buildPromptExamples(scorecard) {
 
   for (const axis of weakest) {
     if (axis.key === 'clarity') {
-      examples.push('이번 요청의 목표, 산출물, 제약조건을 먼저 고정합니다. 이 조건으로 실행 가능한 작업 단위로 나눠 주세요.');
+      examples.push('이번 요청의 목표, 산출물, 제약조건, 성공 기준을 결과 중심으로 고정하고 가능한 범위에서는 자율 실행해 주세요.');
     }
 
     if (axis.key === 'context_provision') {
@@ -811,7 +832,7 @@ function buildPromptExamples(scorecard) {
     }
 
     if (axis.key === 'procedure_design') {
-      examples.push('이번 작업은 1) 구조 파악 2) 변경 계획 3) 구현 4) 검증 순서로 진행하고 단계별 결과를 보여 주세요.');
+      examples.push('가능한 수정 범위와 시스템 권한이 필요한 중단 조건을 구분하고, 필요한 절차만 세워 자율 실행해 주세요.');
     }
 
     if (axis.key === 'verifiability') {

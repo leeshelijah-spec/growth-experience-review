@@ -4,79 +4,135 @@
     {
       "key": "clarity",
       "name": "명확성",
-      "description": "요청 목표, 산출물, 제약조건이 얼마나 분명하게 제시되었는가",
+      "description": "작업 목표, 기대 산출물, 성공 기준이 결과 중심으로 분명하게 제시되었는가",
       "structuralChecks": [
-        { "key": "goal_present", "label": "목표" },
-        { "key": "output_defined", "label": "산출물" },
-        { "key": "constraints_defined", "label": "제약조건" },
-        { "key": "completion_criteria", "label": "완료 기준" }
+        {
+          "key": "goal_present",
+          "label": "목표"
+        },
+        {
+          "key": "output_defined",
+          "label": "산출물"
+        },
+        {
+          "key": "constraints_defined",
+          "label": "제약조건"
+        },
+        {
+          "key": "completion_criteria",
+          "label": "성공 기준"
+        }
       ],
-      "requiredForA": ["goal_present", "output_defined", "constraints_defined", "completion_criteria"],
-      "requiredForB": ["goal_present", "output_defined"],
+      "requiredForA": [
+        "goal_present",
+        "output_defined",
+        "constraints_defined",
+        "completion_criteria"
+      ],
+      "requiredForB": [
+        "goal_present",
+        "output_defined"
+      ],
       "capRules": [
         {
           "maxGrade": "B",
-          "whenMissingAnyOf": ["completion_criteria"],
-          "reason": "완료 기준이 없어 B 상한 적용"
+          "whenMissingAnyOf": [
+            "completion_criteria"
+          ],
+          "reason": "성공 기준이 없어 B 상한 적용"
         },
         {
           "maxGrade": "C",
-          "whenMissingAnyOf": ["output_defined"],
+          "whenMissingAnyOf": [
+            "output_defined"
+          ],
           "reason": "산출물 정의가 없어 C 상한 적용"
         }
       ],
       "floorRules": [
         {
           "minGrade": "B",
-          "whenAllOf": ["goal_present", "output_defined", "constraints_defined"],
+          "whenAllOf": [
+            "goal_present",
+            "output_defined",
+            "constraints_defined"
+          ],
           "scope": "same_session",
           "reason": "목표·산출물·제약조건이 함께 제시되어 최소 B 보정"
         }
       ],
       "gradeCriteria": {
-        "A": "요구사항, 산출물, 제약조건이 모두 명확해 추가 질문 없이 즉시 실행 가능",
-        "B": "요청 목적과 산출물은 분명하고 소규모 보완만 있으면 바로 실행 가능",
-        "C": "기본 목표는 있으나 산출물 범위 또는 제약조건이 자주 비어 있음",
-        "D": "의도는 보이지만 실행 범위와 완료 기준이 불안정함",
+        "A": "목표, 산출물, 제약조건, 성공 기준이 모두 분명해 모델이 자율 실행해도 결과 해석이 안정적임",
+        "B": "목표와 산출물은 분명하고 성공 기준 또는 제약조건만 일부 보완하면 실행 가능",
+        "C": "기본 목표는 있으나 산출물 범위, 제약조건, 성공 기준 중 일부가 자주 비어 있음",
+        "D": "의도는 보이지만 실행 범위와 성공 기준이 불안정함",
         "E": "실행 가능한 작업 단위가 성립하지 않음"
       }
     },
     {
       "key": "context_provision",
       "name": "맥락 제공력",
-      "description": "배경, 전제, 자료, 파일 경로, 현재 상태가 해결에 충분한 수준으로 제공되었는가",
+      "description": "모델이 추론하기 어려운 현재 상태, 외부 자료, 작업 위치, 판단 배경이 충분히 제공되었는가",
       "structuralChecks": [
-        { "key": "current_state", "label": "현재 상태" },
-        { "key": "references", "label": "참고 자료" },
-        { "key": "file_or_path", "label": "파일/경로" },
-        { "key": "purpose", "label": "배경/목적" }
+        {
+          "key": "current_state",
+          "label": "현재 상태"
+        },
+        {
+          "key": "references",
+          "label": "참고 자료"
+        },
+        {
+          "key": "file_or_path",
+          "label": "파일/경로"
+        },
+        {
+          "key": "purpose",
+          "label": "배경/목적"
+        }
       ],
-      "requiredForA": ["current_state", "references", "file_or_path", "purpose"],
-      "requiredForB": ["current_state", "file_or_path"],
+      "requiredForA": [
+        "current_state",
+        "references",
+        "file_or_path",
+        "purpose"
+      ],
+      "requiredForB": [
+        "current_state",
+        "file_or_path"
+      ],
       "capRules": [
         {
           "maxGrade": "B",
-          "whenMissingAnyOf": ["current_state"],
+          "whenMissingAnyOf": [
+            "current_state"
+          ],
           "reason": "현재 상태 설명이 없어 B 상한 적용"
         },
         {
-          "maxGrade": "C",
-          "whenMissingAnyOf": ["file_or_path"],
-          "reason": "파일 또는 작업 경로가 없어 C 상한 적용"
+          "maxGrade": "B",
+          "whenMissingAnyOf": [
+            "file_or_path"
+          ],
+          "reason": "파일 또는 작업 경로가 없어 B 상한 적용"
         }
       ],
       "floorRules": [
         {
           "minGrade": "B",
-          "whenAllOf": ["file_or_path", "current_state", "references"],
+          "whenAllOf": [
+            "file_or_path",
+            "current_state",
+            "references"
+          ],
           "scope": "same_session",
           "reason": "파일·현재 상태·참고 자료가 함께 제시되어 최소 B 보정"
         }
       ],
       "gradeCriteria": {
-        "A": "관련 배경, 파일 경로, 현재 상태, 참고 자료가 체계적으로 제공됨",
-        "B": "핵심 배경과 참고 정보가 제공되어 추가 질문이 제한적으로만 발생함",
-        "C": "기본 배경은 있으나 파일, 히스토리, 현재 상태 정보가 자주 빠짐",
+        "A": "현재 상태, 작업 위치, 참고 자료, 판단 배경이 체계적으로 제공되어 맥락 재수집이 거의 필요 없음",
+        "B": "핵심 배경과 참고 정보가 제공되어 모델의 추론과 탐색으로 보완 가능함",
+        "C": "기본 배경은 있으나 모델이 알 수 없는 파일, 히스토리, 현재 상태 정보가 자주 빠짐",
         "D": "단편 정보 위주라 해결에 필요한 맥락 재수집 비용이 큼",
         "E": "문제 해결에 필요한 맥락이 거의 제공되지 않음"
       }
@@ -84,43 +140,121 @@
     {
       "key": "procedure_design",
       "name": "절차 설계력",
-      "description": "작업이 단계별 실행 흐름으로 구조화되어 있는가",
+      "description": "세부 절차를 과도하게 지시하기보다 자율 실행 범위, 권한, 중단 조건이 분명한가",
       "gradeCriteria": {
-        "A": "작업이 단계별로 명확히 분리되어 순서대로 즉시 실행 가능",
-        "B": "주요 단계가 정의되어 있고 약간의 보완만 있으면 실행 가능",
-        "C": "단계 구분은 있으나 흐름과 완료 조건의 일관성이 약함",
-        "D": "단계 단서는 있으나 실제 실행 순서가 불명확함",
-        "E": "작업 절차가 거의 구성되지 않음"
-      }
+        "A": "자율 실행 범위, 허용된 변경, 중단 조건, 필요한 절차가 선명해 모델이 효율적인 경로를 선택할 수 있음",
+        "B": "자율 실행 범위와 권한은 대체로 분명하고 필요한 절차만 일부 보완하면 안정적으로 실행 가능",
+        "C": "작업 흐름 단서는 있으나 위임 범위, 권한, 중단 조건 중 일부가 불명확함",
+        "D": "절차 또는 위임 단서는 있으나 실제 실행 판단 기준이 불명확함",
+        "E": "자율 실행을 맡길 수 있는 절차, 권한, 중단 기준이 거의 없음"
+      },
+      "structuralChecks": [
+        {
+          "key": "autonomy_scope",
+          "label": "자율 실행 범위"
+        },
+        {
+          "key": "authority_boundary",
+          "label": "권한/허용 범위"
+        },
+        {
+          "key": "stopping_condition",
+          "label": "중단 조건"
+        },
+        {
+          "key": "sequence_when_needed",
+          "label": "필요 시 절차"
+        }
+      ],
+      "requiredForA": [
+        "autonomy_scope",
+        "authority_boundary",
+        "stopping_condition",
+        "sequence_when_needed"
+      ],
+      "requiredForB": [
+        "autonomy_scope",
+        "authority_boundary"
+      ],
+      "capRules": [
+        {
+          "maxGrade": "B",
+          "whenMissingAnyOf": [
+            "autonomy_scope"
+          ],
+          "reason": "자율 실행 범위가 없어 B 상한 적용"
+        }
+      ],
+      "floorRules": [
+        {
+          "minGrade": "B",
+          "whenAllOf": [
+            "autonomy_scope",
+            "authority_boundary",
+            "stopping_condition",
+            "sequence_when_needed"
+          ],
+          "scope": "same_session",
+          "reason": "자율 실행 범위·권한·중단 조건·필요 절차가 함께 제시되어 최소 B 보정"
+        }
+      ]
     },
     {
       "key": "verifiability",
       "name": "검증성",
-      "description": "결과 확인, 비교, 테스트, 사실확인 루프가 포함되어 있는가",
+      "description": "결과 확인, 비교, 테스트, 증거, 미검증 항목, 남은 리스크 확인 루프가 포함되어 있는가",
       "structuralChecks": [
-        { "key": "verification_criteria", "label": "검증 기준" },
-        { "key": "comparison_basis", "label": "비교 기준" },
-        { "key": "unverified_items", "label": "미검증 항목" },
-        { "key": "risk_remaining", "label": "남은 리스크" }
+        {
+          "key": "verification_criteria",
+          "label": "검증 기준"
+        },
+        {
+          "key": "comparison_basis",
+          "label": "비교 기준"
+        },
+        {
+          "key": "unverified_items",
+          "label": "미검증 항목"
+        },
+        {
+          "key": "risk_remaining",
+          "label": "남은 리스크"
+        }
       ],
-      "requiredForA": ["verification_criteria", "comparison_basis", "unverified_items", "risk_remaining"],
-      "requiredForB": ["verification_criteria", "comparison_basis"],
+      "requiredForA": [
+        "verification_criteria",
+        "comparison_basis",
+        "unverified_items",
+        "risk_remaining"
+      ],
+      "requiredForB": [
+        "verification_criteria",
+        "comparison_basis"
+      ],
       "capRules": [
         {
           "maxGrade": "C",
-          "whenMissingAnyOf": ["verification_criteria"],
+          "whenMissingAnyOf": [
+            "verification_criteria"
+          ],
           "reason": "검증 기준이 없어 C 상한 적용"
         },
         {
           "maxGrade": "C",
-          "whenMissingAnyOf": ["comparison_basis"],
+          "whenMissingAnyOf": [
+            "comparison_basis"
+          ],
           "reason": "비교 기준이 없어 C 상한 적용"
         }
       ],
       "floorRules": [
         {
           "minGrade": "B",
-          "whenAllOf": ["verification_criteria", "unverified_items", "risk_remaining"],
+          "whenAllOf": [
+            "verification_criteria",
+            "unverified_items",
+            "risk_remaining"
+          ],
           "scope": "same_session",
           "reason": "검증 기준·미검증 항목·남은 리스크가 함께 제시되어 최소 B 보정"
         }
@@ -138,29 +272,58 @@
       "name": "복구력",
       "description": "막힘 상황에서 우회, 재설정, 대안 탐색이 가능한가",
       "structuralChecks": [
-        { "key": "problem_identified", "label": "문제 인지" },
-        { "key": "cause_hypothesis", "label": "원인 가설" },
-        { "key": "alternatives_present", "label": "대안 제시" },
-        { "key": "decision_basis", "label": "판단 근거" }
+        {
+          "key": "problem_identified",
+          "label": "문제 인지"
+        },
+        {
+          "key": "cause_hypothesis",
+          "label": "원인 가설"
+        },
+        {
+          "key": "alternatives_present",
+          "label": "대안 제시"
+        },
+        {
+          "key": "decision_basis",
+          "label": "판단 근거"
+        }
       ],
-      "requiredForA": ["problem_identified", "cause_hypothesis", "alternatives_present", "decision_basis"],
-      "requiredForB": ["problem_identified", "alternatives_present", "decision_basis"],
+      "requiredForA": [
+        "problem_identified",
+        "cause_hypothesis",
+        "alternatives_present",
+        "decision_basis"
+      ],
+      "requiredForB": [
+        "problem_identified",
+        "alternatives_present",
+        "decision_basis"
+      ],
       "capRules": [
         {
           "maxGrade": "C",
-          "whenMissingAnyOf": ["alternatives_present"],
+          "whenMissingAnyOf": [
+            "alternatives_present"
+          ],
           "reason": "대안 제시가 없어 C 상한 적용"
         },
         {
           "maxGrade": "C",
-          "whenMissingAnyOf": ["decision_basis"],
+          "whenMissingAnyOf": [
+            "decision_basis"
+          ],
           "reason": "판단 근거가 없어 C 상한 적용"
         }
       ],
       "floorRules": [
         {
           "minGrade": "B",
-          "whenAllOf": ["problem_identified", "alternatives_present", "decision_basis"],
+          "whenAllOf": [
+            "problem_identified",
+            "alternatives_present",
+            "decision_basis"
+          ],
           "scope": "same_session",
           "reason": "문제·대안·판단 근거가 함께 제시되어 최소 B 보정"
         }
